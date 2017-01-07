@@ -148,13 +148,13 @@ func getFriendsForUser(withEmail email:String) -> Action<[User]> {
         .flatMap(getUserFriends)        
 }
 
-/* Just to clarify, the last function is equivalent to:
+// Just to clarify, the last function is equivalent to:
 func getFriendsForUser(withEmail email:String) -> Action<[User]> {
     return getUser(name: email)
         .flatMap({ (user) -> Reader<Env, [User]> in
           return getUserFriends(user: user)
         })
-}*/
+}
 ```
 
 Now let's try to go the extra mile and get the ages of all the friends of a user with a specific email. With flatMap that should be pretty easy, right?
