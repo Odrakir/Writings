@@ -16,7 +16,7 @@ Ok, back in the world of adults, where you don’t play with stickers any more (
 
 Lets say you are building a social app and you need to get a user for a specific email. You’ll have a method with the following signature:
 
-```
+```swift
 func getUser(email:String) -> User
 ```
 
@@ -28,7 +28,7 @@ For our app, let’s call this landscape, the service.
 
 So, how do we let the previous function know which service to use, meaning, where should it get its data from? In other words, how can we inject the service? The direct solution might be just passing another parameter to the function.
 
-```
+```swift
 func getUser(email:String, service:Service) -> User {
   return service.findUser(withEmail:email)
 }
@@ -48,13 +48,13 @@ What if there was another way?. What if we could remove the service parameter fr
 
 What we are going to do is have that function return some kind of structure, that can later accept the environment to compute the actual result of the operation. That something is a Reader and the new function signature would be:
 
-```
+```swift
 func getUser(email:String) -> Reader<Service, User>
 ```
 
 The Reader is generic over two types: The environment and the actual result we want to get. And as the Reader is just a function from want to the other, it'll be implemented like so:
 
-```
+```swift
 public struct Reader<E, A> {
 
     let f : (E) -> A
@@ -73,7 +73,7 @@ As you can see a Reader is just a struct that holds a function from one generic 
 
 Having all that in place, the usage is pretty simple
 
-```
+```swift
 func getUser(email:String) -> Reader<Service, User> {
   return Reader { service in
     return service.findUser(withEmail:email)
@@ -88,7 +88,7 @@ With this approach we don't directly return the result from the service, but we 
 
 For our use of readers in this example we can create an alias to simplify the syntax a little bit. We can think of the Reader from Service to anything as an action we want to run in our Service.
 
-```
+```swift
 typealias Action<A> = Reader<Env, A>
 
 func getUser(email:String) -> Action<User> {
@@ -109,7 +109,7 @@ let user:User = getUserAction.run(service)
 
 This is all fine, but I might seem a little overkill just to pass a dependency. Everything up to this point could be achieved by using curried functions. But with the Reader we can go further. The Reader is actually a Monad, and as such it can implement map and flatMap.
 
-```
+```swift
 extension Reader
 {
     public func map<B>(_ g:@escaping (A) -> B) -> Reader<E, B> {
@@ -128,14 +128,14 @@ On a side note: The Reader Monad is called like that because it "reads" from a s
 
 Usage of map is pretty straight forward
 
-```
+```swift
 let getNameLength = getUser(email:"user_email@gmail.com")
   .map({ $0.name.characters.count })
 ```
 
 Flatmap will allow us to chain readers easily. For example, to get User objects that are friends with a User with a specific email.
 
-```
+```swift
 func getUserFriends (user:User) -> Action<[User]> {
     return Action { ctx in
         return service.findFriends(forUser: user)
@@ -159,7 +159,7 @@ func getFriendsForUser(withEmail email:String) -> Action<[User]> {
 
 Now let's try to go the extra mile and get the ages of all the friends of a user with a specific email. With flatMap that should be pretty easy, right?
 
-```
+```swift
 func getUserAge(user:User) -> Action<Int> {
     return Action { service in
         return service.getAge(forUser: user)
@@ -176,7 +176,7 @@ func getFriendsAgesForUser(withEmail email:String) -> Action<[Int]> {
 
 What's going on there? Simple: We are getting an array of users from getUserFriends, and getUserAge needs a single User. What can we do? We could manually write the flatMap closure and return a reader which function maps over the users array asking for their age.
 
-```
+```swift
 func getFriendsAgesForUser(withEmail email:String) -> Action<[Int]> {
     return getUser(name: email)
         .flatMap(getUserFriends)
@@ -192,7 +192,7 @@ func getFriendsAgesForUser(withEmail email:String) -> Action<[Int]> {
 
 This works, but now it makes our code look ugly as we were aiming to have every step on our new action in just a single flatMap line. We can generalize what that flatMap does and extract the implementation to a function. If you think about it, what we are actually doing is just turning a function from User to a Reader<Service, Int>, to a function from [User] to Reader<Service, [Int]>. We can write a pure function that does just that.
 
-```
+```swift
 func multiple<E,A,B>(_ f:@escaping (A) -> Reader<E, B>) -> ([A]) -> Reader<E, [B]> {
     return { v in
         return Reader { service in
