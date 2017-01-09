@@ -34,7 +34,7 @@ func getUser(email:String, service:Service) -> User {
 }
 ```
 
-Now the service access the repository to return a user for the email we are passing. For the moment we are ignoring all kinds of errors. This is great because we can now replace the Service by anything else that conforms the same protocol for testing purposes, for example.
+Now the service accesses the repository to return a user for the email we are passing. For the moment we are ignoring all kinds of errors. This is great because we can now replace the Service by anything else that conforms the same protocol for testing purposes, for example.
 
 While there’s nothing wrong with this approach, it means that now every function of that kind has to include the service parameter. Adding a default value to the service parameter might look simpler, you can again use the previous function signature and the service will be the default one. But then you are making the dependency on the service implicit and harder to see for API users.
 
