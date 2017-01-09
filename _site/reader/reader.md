@@ -4,7 +4,7 @@ Ok, imagine one of those sticker books for kids in which there are some stickers
 
 The result is a scene in which the cow is chewing cud in a field, in an circus, or in space, although there might not be much grass to chew there…
 
-![Image of a cow](./cow.png)
+[PICTURE OF A STICKER BOOK]
 
 The kid first takes the sticker from the sticker’s page in the book, then decides where to place it (most times in following a totally random logic) and finally puts it in a specific environment.
 
